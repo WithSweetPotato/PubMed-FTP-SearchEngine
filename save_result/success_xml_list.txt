@@ -1,4 +1,3 @@
-pubmed24n1220.xml.gz
 pubmed24n1221.xml.gz
 pubmed24n1222.xml.gz
 pubmed24n1223.xml.gz
