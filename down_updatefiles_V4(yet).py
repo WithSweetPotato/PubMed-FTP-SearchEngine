@@ -1,6 +1,50 @@
 from ftplib import FTP
 import os
 import hashlib
+import logging
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO, filename='ftp_download_log.txt', filemode='a', format='%(message)s')
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
+
+def main():
+    # FTP에서 XML 파일 다운로드
+    xml_file_names = ftp_download()
+    
+    # 테스트용 성공 데이터 추가
+    xml_file_names.append("example.xml.gz")
+    xml_file_names.append("example1.xml.gz")
+
+    # MD5 검증 수행
+    success_xml_files, fail_xml_files = init_call_md5(xml_file_names)
+
+    # 성공한 파일 목록 출력
+    logging.info("성공한 XML 파일들:")
+    for file in success_xml_files:
+        logging.info(file)
+
+    # 실패한 파일 목록 출력
+    if fail_xml_files:
+        logging.info("실패한 XML 파일들:")
+        for file in fail_xml_files:
+            logging.info(file)
+    else:
+        logging.info("모든 파일이 성공적으로 검증되었습니다.")
+
+    # 결과를 텍스트 파일에 저장
+    success_file_path = os.path.join(".", "save_result", "success_xml_list.txt")
+    fail_file_path = os.path.join(".", "save_result", "fail_xml_list.txt")
+
+    write_list_to_file(success_xml_files, success_file_path)
+    write_list_to_file(fail_xml_files, fail_file_path)
+
+    if fail_xml_files:
+        logging.info("무결성 검증에 실패한 파일 다운로드를 재시도합니다.")
+        re_download_and_verify(fail_xml_files) 
 
 # 파일에 대한 MD5 해시 계산
 def calculate_md5(file_path):
@@ -28,42 +72,84 @@ def verify_md5(file_path, md5_file_path):
     
     return is_match
 
-# MD5 검증 및 재다운로드 필요 파일 목록 반환
-def verify_and_redownload(xml_file_names):
+def init_call_md5(xml_file_names):
+    # 파일 경로 설정
+    folder_path = "save_files"
     success_xml_files = []
-    need_redownload_files = []
+    fail_xml_files = []
 
     for xml_file_name in xml_file_names:
-        file_path = os.path.join("save_files", xml_file_name)
-        md5_file_path = os.path.join("save_files", f"{xml_file_name}.md5")
+        file_path = os.path.join(folder_path, xml_file_name)
+        md5_file_path = os.path.join(folder_path, f"{xml_file_name}.md5")
 
-        # MD5 검증
+        # MD5 검증 수행
         if verify_md5(file_path, md5_file_path):
             success_xml_files.append(xml_file_name)
         else:
-            need_redownload_files.append(xml_file_name)
-    
-    return success_xml_files, need_redownload_files
+            fail_xml_files.append(xml_file_name)
+    return success_xml_files, fail_xml_files
 
-# 재다운로드 및 최종 검증
-def final_verification(need_redownload_files):
-    updated_success_files = []
-    updated_fail_files = []
+# FTP에서 파일 다운로드
+def ftp_download():
+    # FTP 서버 설정
+    ftp_url = "ftp.ncbi.nlm.nih.gov"
+    ftp_directory = "/pubmed/updatefiles/"
 
-    for file_name in need_redownload_files:
+    # FTP 서버에 연결
+    ftp = FTP(ftp_url)
+    ftp.login()
+
+    # 디렉토리 변경
+    ftp.cwd(ftp_directory)
+
+    # 파일 목록 가져오기
+    file_list = ftp.nlst()
+
+    # 로컬 디렉토리 설정
+    local_directory = "save_files"
+    os.makedirs(local_directory, exist_ok=True)
+
+    # XML 파일 목록 초기화
+    xml_file_names = []
+
+    # 파일 다운로드
+    for file_name in file_list:
+        local_file_path = os.path.join(local_directory, file_name)
+
+        # "xml.gz"로 끝나는 파일 저장
+        if file_name.endswith("xml.gz"):
+            xml_file_names.append(file_name)
+
+        # 파일이 이미 존재하는지 확인
+        if os.path.exists(local_file_path):
+            continue
+
+        # 파일 다운로드
+        with open(local_file_path, 'wb') as local_file:
+            ftp.retrbinary('RETR ' + file_name, local_file.write)
+
+    ftp.quit()
+    print(xml_file_names)
+    print("파일 다운로드 완료.")
+    return xml_file_names
+
+def write_list_to_file(file_list, file_path):
+    with open(file_path, 'w') as file:
+        for item in file_list:
+            file.write(item + '\n')
+            
+
+def re_download_and_verify(file_names):
+    for file_name in file_names:
         print(f"{file_name} 재다운로드 중...")
         ftp_re_download(file_name)
         file_path = os.path.join("save_files", file_name)
         md5_file_path = os.path.join("save_files", f"{file_name}.md5")
-
         if verify_md5(file_path, md5_file_path):
-            updated_success_files.append(file_name)
+            print(f"재검증 성공: {file_name}")
         else:
-            updated_fail_files.append(file_name)
-    
-    return updated_success_files, updated_fail_files
+            print(f"재검증 실패: {file_name}")
 
-# FTP에서 파일 재다운로드
 def ftp_re_download(file_name):
     # FTP 서버 설정
     ftp_url = "ftp.ncbi.nlm.nih.gov"
@@ -89,25 +175,5 @@ def ftp_re_download(file_name):
     ftp.quit()
     print(f"{file_name} 재다운로드 완료.")
 
-def main():
-    # 테스트용 XML 파일 목록
-    xml_file_names = ["example.xml.gz", "example1.xml.gz"]
-
-    # 초기 MD5 검증 및 재다운로드 필요 파일 목록 반환
-    success_xml_files, need_redownload_files = verify_and_redownload(xml_file_names)
-
-    # 재다운로드 및 최종 검증
-    updated_success_files, updated_fail_files = final_verification(need_redownload_files)
-
-    # 최종 결과 출력
-    if updated_success_files:
-        print(f"성공한 XML 파일들: {updated_success_files}")
-    else:
-        print("성공한 XML 파일이 하나도 없습니다.")
-    
-    if updated_fail_files:
-        print(f"실패한 XML 파일들: {updated_fail_files}")
-    else:
-        print("모두 성공했습니다.")
 
 main()
