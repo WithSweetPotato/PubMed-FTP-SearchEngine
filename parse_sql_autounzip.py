@@ -1,7 +1,37 @@
+import mysql.connector
 import gzip
 import os
 import json
 import xml.etree.ElementTree as ET
+from datetime import datetime
+import logging
+# MariaDB 연결 설정
+logging.basicConfig(filename='parsing_errors.log', level=logging.ERROR)
+
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': '20092021',
+    'database': 'mydatabase'
+}
+
+# MariaDB에 결과 저장
+def save_results_to_db(start_time, end_time, duration, success_count, fail_count):
+    conn = None
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO parsing_results (start_time, end_time, duration, success_count, fail_count)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (start_time, end_time, duration, success_count, fail_count))
+        conn.commit()
+    except mysql.connector.Error as e:
+        print(f"MariaDB에 데이터 저장 중 오류 발생: {e}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
 def decompress_gz_files():
     source_folder = 'save_files'
@@ -22,18 +52,23 @@ def decompress_gz_files():
             except gzip.BadGzipFile:
                 print(f'오류: "{file}"은(는) 유효한 GZIP 파일이 아닙니다.')
 
+# 
 def parse_xml_files():
     unzip_folder = 'unzip_xmls'
     parsed_folder = 'parsed_xmls'
     
     if not os.path.exists(parsed_folder):
         os.makedirs(parsed_folder)
-        
+
+    start_time = datetime.now()
+    success_count = 0
+    fail_count = 0
+
     for xml_file in os.listdir(unzip_folder):
         if xml_file.endswith(".xml"):
             xml_file_path = os.path.join(unzip_folder, xml_file)
-            output_file_path = os.path.join(parsed_folder, f"parsed_{xml_file[:-4]}.json")
-
+            output_file_path = os.path.join(parsed_folder, f"parsed_{xml_file[:-4]}.json")\
+                
             if not os.path.exists(xml_file_path):
                 print(f'"{xml_file}" 파일을 찾을 수 없습니다.')
                 continue
@@ -43,7 +78,6 @@ def parse_xml_files():
                 continue
 
             articles_data = []
-
             try:
                 tree = ET.parse(xml_file_path)
                 root = tree.getroot()
@@ -65,7 +99,7 @@ def parse_xml_files():
                         last_name = author.find('LastName').text if author.find('LastName') is not None else 'N/A'
                         fore_name = author.find('ForeName').text if author.find('ForeName') is not None else 'N/A'
                         authors.append(f"{fore_name} {last_name}")
-
+                        
                     articles_data.append({
                         'PMID': pmid,
                         'ArticleTitle': article_title,
@@ -76,14 +110,37 @@ def parse_xml_files():
                         'DateRevised': date_revised,
                         'Authors': authors
                     })
-
                 with open(output_file_path, 'w', encoding='utf-8') as f:
                     json.dump(articles_data, f, ensure_ascii=False, indent=4)
 
-                print(f'"{xml_file}" 파일 파싱 완료')
+                print(f'"{xml_file}" 파일 파싱 완료.')
 
             except ET.ParseError as e:
+                logging.error(f'파싱 실패: {xml_file}, 오류: {e}')
                 print(f'"{xml_file}" 파일 파싱 중 오류 발생: {e}')
+            try:
+                # XML 파일 파싱 시도
+                # 파싱 성공 시 success_count 증가
+                success_count += 1
+            except ET.ParseError as e:
+                # 파싱 실패 시 fail_count 증가
+                fail_count += 1
+
+    end_time = datetime.now()
+    duration = (end_time - start_time).total_seconds()
+    
+    
+    hours, remainder = divmod(duration, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    print(f"파싱 완료: 성공 {success_count}, 실패 {fail_count}")
+    print(f"총 소요 시간: {int(hours)}시간 {int(minutes)}분 {int(seconds)}초")
+
+    # print(f"파싱 완료: 성공 {success_count}, 실패 {fail_count}")
+    # print(f"총 소요 시간: {duration}초")
+
+    # MariaDB에 결과 저장
+    save_results_to_db(start_time, end_time, duration, success_count, fail_count)
 
 def main():
     decompress_gz_files()

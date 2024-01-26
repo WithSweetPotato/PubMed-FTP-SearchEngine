@@ -1,4 +1,4 @@
-# TheragenBio-Platform-Dept.-Assignment
+# TheragenBio-Platform-Dept-Assignment
 
 This Git repository was created for the interview task in the Platform Development Department of TheragenBio's Business Development Office.
 

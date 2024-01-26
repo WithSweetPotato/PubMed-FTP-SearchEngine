@@ -1,0 +1,2 @@
+ERROR:root:파싱 실패: pubmed24n1269.xml, 오류: syntax error: line 1, column 0
+ERROR:root:파싱 실패: pubmed24n1228.xml, 오류: not well-formed (invalid token): line 1, column 0
