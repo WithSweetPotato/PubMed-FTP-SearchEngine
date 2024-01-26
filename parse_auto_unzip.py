@@ -83,7 +83,8 @@ def parse_xml_files():
 
 def main():
     decompress_gz_files()
+    print("압축 해제가 끝났습니다. Parsing을 시작합니다.")
     parse_xml_files()
-    print("All XML files in 'unzip_xmls' have been successfully parsed.")
+    print("'unzip_xmls' 폴더의 모든 XML 파일들이 성공적으로 파싱되었습니다.")
 
 main()
