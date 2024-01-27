@@ -27,7 +27,7 @@ def parse_xml_files():
     parsed_folder = 'parsed_xmls'
     
     if not os.path.exists(parsed_folder):
-        os.makedirs(parsed_folder)
+        os.makedirs(parsed_folder) 
         
     for xml_file in os.listdir(unzip_folder):
         if xml_file.endswith(".xml"):
@@ -48,8 +48,7 @@ def parse_xml_files():
                 tree = ET.parse(xml_file_path)
                 root = tree.getroot()
 
-                for article in root.findall('.//PubmedArticle'):
-                    pmid = article.find('.//PMID').text
+                for article in root.findall('.//Pubmed0.30Article'):
                     article_title = article.find('.//ArticleTitle').text
                     language = article.find('.//Language').text if article.find('.//Language') is not None else 'Unknown'
                     journal_title = article.find('.//Journal/Title').text
