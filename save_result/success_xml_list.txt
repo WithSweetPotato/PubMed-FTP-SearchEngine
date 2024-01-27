@@ -50,5 +50,6 @@ pubmed24n1268.xml.gz
 pubmed24n1269.xml.gz
 pubmed24n1270.xml.gz
 pubmed24n1271.xml.gz
+pubmed24n1272.xml.gz
 example.xml.gz
 example1.xml.gz

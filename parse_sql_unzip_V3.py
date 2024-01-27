@@ -1,7 +1,6 @@
 import mysql.connector
 import gzip
 import os
-import json
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import logging
@@ -17,7 +16,6 @@ db_config = {
     'database': 'mydatabase'
 }
 
-# MariaDB에 결과 저장
 def save_results_to_db(start_time, end_time, duration, success_count, fail_count):
     conn = None
     try:
@@ -40,7 +38,6 @@ def save_articles_to_db(articles_data):
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
-        # 일괄 삽입을 위해 executemany 메서드를 사용
         cursor.executemany("""
             INSERT INTO parsed_data (PMID, ArticleTitle, Language, JournalTitle, ISSN, PubDate, DateRevised, Authors)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -51,7 +48,6 @@ def save_articles_to_db(articles_data):
     finally:
         if conn and conn.is_connected():
             cursor.close()
-            conn.close()
             conn.close()
 
 def decompress_gz_files():
@@ -65,38 +61,67 @@ def decompress_gz_files():
             gz_file_path = os.path.join(source_folder, file)
             decompressed_file_path = os.path.join(target_folder, file[:-3])
 
+            # Try-except block to handle potential gzip errors
             try:
                 with gzip.open(gz_file_path, 'rb') as gz_file:
                     with open(decompressed_file_path, 'wb') as decompressed_file:
                         decompressed_file.write(gz_file.read())
-                print(f'"{file[:-3]}"이(가) 압축해제되어 "{target_folder}" 폴더에 저장되었습니다.')
+                    print(f'"{file[:-3]}"이(가) 압축해제되어 "{target_folder}" 폴더에 저장되었습니다.')
             except gzip.BadGzipFile:
                 print(f'오류: "{file}"은(는) 유효한 GZIP 파일이 아닙니다.')
 
-def process_xml_file(xml_file):
-    xml_file_path = os.path.join('unzip_xmls', xml_file)
 
+def check_parsed_files():
+    parsed_files = set()
+    conn = None
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS parsing_filename (filename VARCHAR(255), status VARCHAR(10), PRIMARY KEY(filename))")
+        cursor.execute("SELECT filename FROM parsing_filename WHERE status = 'success'")
+        parsed_files = {row[0] for row in cursor.fetchall()}
+    except mysql.connector.Error as e:
+        print(f"파싱 파일 확인 중 오류 발생: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+    return parsed_files
+
+def update_parsing_status(filename, status):
+    conn = None
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO parsing_filename (filename, status) VALUES (%s, %s) ON DUPLICATE KEY UPDATE status = %s", (filename, status, status))
+        conn.commit()
+    except mysql.connector.Error as e:
+        print(f"파싱 상태 업데이트 중 오류 발생: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+def process_xml_file(xml_file, parsed_files):
+    
+    xml_file_path = os.path.join('unzip_xmls', xml_file)
+    success_count = 0  # 성공 카운트 변수 초기화
+    if xml_file in parsed_files:  # 이미 처리된 파일 건너뛰기
+        return 0, 0
     if not os.path.exists(xml_file_path):
         print(f'"{xml_file}" 파일을 찾을 수 없습니다.')
-        return 0, 1  # 성공 카운트 0, 실패 카운트 1 반환
+        update_parsing_status(xml_file, 'fail')  # 상태 업데이트 추가
+        return 0, 1
 
     if os.path.getsize(xml_file_path) == 0:
         print(f'"{xml_file}" 파일은 비어 있습니다.')
-        return 0, 1  # 성공 카운트 0, 실패 카운트 1 반환
-
-    match = re.search(r'\d+', xml_file)
-    if match is None:
-        print(f'"{xml_file}" 파일 이름에서 숫자를 찾을 수 없습니다.')
+        update_parsing_status(xml_file, 'fail')  # 상태 업데이트 추가
         return 0, 1
 
-    number = int(match.group())
     try:
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
-        success_count = 0
-        fail_count = 0
-
-        articles_data = []  # 기사 데이터를 모을 리스트 생성
+        articles_data = []
 
         for article in root.findall('.//PubmedArticle'):
             pmid = article.find('.//PMID').text
@@ -125,11 +150,14 @@ def process_xml_file(xml_file):
             ))
             success_count += 1  # 성공 카운트 증가
 
-        # articles_data를 데이터베이스에 일괄 삽입
-        save_articles_to_db(articles_data)
-
-        print(f'"{xml_file}" 파일 파싱 완료. 성공 {success_count}, 실패 {fail_count}')
-        return success_count, fail_count
+        if articles_data:
+            save_articles_to_db(articles_data)
+            update_parsing_status(xml_file, 'success')  # 성공 시 상태 업데이트
+            print(f'"{xml_file}" 파일 파싱 완료. 성공 {len(articles_data)}')
+            return len(articles_data), 0
+        else:
+            update_parsing_status(xml_file, 'fail')  # 데이터 없음에 대한 실패 처리
+            return 0, 1
 
     except ET.ParseError as e:
         logging.error(f'파싱 실패: {xml_file}, 오류: {e}')
@@ -137,28 +165,28 @@ def process_xml_file(xml_file):
         return 0, 1  # 성공 카운트 0, 실패 카운트 1 반환
 
 def parse_xml_files():
-    unzip_folder = 'unzip_xmls'
-    xml_files = [xml_file for xml_file in os.listdir(unzip_folder) if xml_file.endswith(".xml")]
-    xml_files.sort(key=lambda x: int(re.search(r'\d+', x).group() if re.search(r'\d+', x) else 0))
+    parsed_files = check_parsed_files()
+    xml_files = [f for f in os.listdir('unzip_xmls') if f.endswith(".xml") and f not in parsed_files]
     
-    start_time = datetime.now()
+    # 디버깅을 위해 파싱 대상 파일 목록 출력
+    print(f"파싱할 파일 목록: {xml_files}")
+
+    if not xml_files:
+        print("파싱할 파일이 없습니다.")
+        return
+    
+    start_time = datetime.now()  # 파싱 시작 시간 기록
     success_count = 0
     fail_count = 0
 
-    # 테이블 내용 초기화
-    clear_table()
 
     with ThreadPoolExecutor() as executor:
-        # 각 XML 파일에 대한 처리 작업을 스케줄링합니다.
-        futures = {executor.submit(process_xml_file, xml_file): xml_file for xml_file in xml_files}
-
-        # as_completed를 사용하여 각 작업의 완료를 기다립니다.
+        futures = [executor.submit(process_xml_file, xml_file, parsed_files) for xml_file in xml_files]
         for future in as_completed(futures):
-            success, fail = future.result()  # 작업의 결과를 가져옵니다. 튜플로부터 직접 값을 언패킹합니다.
-            xml_file = futures[future]  # 처리된 XML 파일 이름을 가져옵니다.
-            #print(f'"{xml_file}" 파일 파싱 완료. 성공 {success}, 실패 {fail}')
+            success, fail = future.result()
             success_count += success
             fail_count += fail
+
 
     end_time = datetime.now()
     duration = (end_time - start_time).total_seconds()
@@ -171,27 +199,13 @@ def parse_xml_files():
     save_results_to_db(start_time, end_time, duration, success_count, fail_count)
 
 
-def clear_table():
-    """parsed_data 테이블의 모든 데이터를 삭제합니다."""
-    conn = None
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM parsed_data")
-        conn.commit()
-        print("테이블 내용이 초기화되었습니다.")
-    except mysql.connector.Error as e:
-        print(f"테이블 초기화 중 오류 발생: {e}")
-    finally:
-        if conn and conn.is_connected():
-            cursor.close()
-            conn.close()
-
 def main():
     decompress_gz_files()
-    print("압축 해제가 끝났습니다. Parsing을 시작합니다.")
     parse_xml_files()
-    print("'unzip_xmls' 폴더의 모든 XML 파일들이 성공적으로 파싱되었습니다.")
+    print("파싱 작업이 완료되었습니다.")
 
 if __name__ == "__main__":
     main()
+
+
+#시간 나오는게 없어짐. 추가해야한다.
