@@ -14,7 +14,7 @@ def main():
     run_script("down_updatefiles_V3.py") #FTP 서버에서 파일을 다운로드받고, MD5 검증을 실행함.
 
     # parse_auto_unzip.py 스크립트 실행
-    run_script("parse_sql_autounzip.py") #MD5 검증이 완료된 파일에 한해 압축 해제 및 
+    run_script("parse_sql_unzip_V3.py") #MD5 검증이 완료된 파일에 한해 압축 해제 및 
 
 if __name__ == "__main__":
     main()

@@ -16,6 +16,8 @@ db_config = {
     'database': 'mydatabase'
 }
 
+
+
 def save_results_to_db(start_time, end_time, duration, success_count, fail_count):
     conn = None
     try:
@@ -169,13 +171,39 @@ def process_xml_file(xml_file, parsed_files):
         logging.error(f'파싱 실패: {xml_file}, 오류: {e}')
         print(f'"{xml_file}" 파일 파싱 중 오류 발생: {e}')
         return 0, 1  # 성공 카운트 0, 실패 카운트 1 반환
+    
+    
+    
+def fetch_success_filenames():
+    try:
+        # db_config를 사용하여 데이터베이스에 연결
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # 파싱에 성공한 파일 이름 조회
+        cursor.execute("SELECT filename FROM parsing_filename WHERE status = 'success'")
+        success_files = cursor.fetchall()
+
+        # 파싱에 성공한 파일 이름 출력
+        print("파싱에 성공한 파일들:")
+        for (filename,) in success_files:
+            print(filename)
+
+        return {filename[0] for filename in success_files}
+
+    except mysql.connector.Error as e:
+        print(f"데이터베이스 에러: {e}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
 
 def parse_xml_files():
     parsed_files = check_parsed_files()
     xml_files = [f for f in os.listdir('unzip_xmls') if f.endswith(".xml") and f not in parsed_files]
-    
-    # 디버깅을 위해 파싱 대상 파일 목록 출력
-    print(f"새롭게 추가되거나 오류가 생겨, 파싱할 파일 목록: {xml_files}")
+
 
     if not xml_files:
         print("파싱할 파일이 없습니다.")
@@ -200,7 +228,7 @@ def parse_xml_files():
     minutes, seconds = divmod(remainder, 60)
 
     print(f"파싱 완료: 성공 {success_count}, 실패 {fail_count}") # 파싱에 성공한 파일과 실패한 파일의 갯수를 출력줍니다.
-    print(f"파싱 총 소요 시간: {int(hours)}시간 {int(minutes)}분 {int(seconds)}초") # 파싱에 걸린 시간을 출력합니다.
+    print(f"총 소요 시간: {int(hours)}시간 {int(minutes)}분 {int(seconds)}초") # 파싱에 걸린 시간을 출력합니다.
     print(f"파싱 시작 시간: {start_time.strftime('%Y-%m-%d %H:%M:%S')}") # 파싱 시작 시간을 출력합니다.
     print(f"파싱 종료 시간: {end_time.strftime('%Y-%m-%d %H:%M:%S')}") # 파싱 종료 시간을 출력합니다.
     # 결과를 데이터베이스에 저장합니다.
