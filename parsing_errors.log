@@ -1,2 +1,39 @@
 ERROR:root:ÆÄ½Ì ½ÇÆÐ: pubmed24n1269.xml, ¿À·ù: syntax error: line 1, column 0
 ERROR:root:ÆÄ½Ì ½ÇÆÐ: pubmed24n1228.xml, ¿À·ù: not well-formed (invalid token): line 1, column 0
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5500
+ * Running on http://192.168.0.20:5500
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5500
+ * Running on http://192.168.0.20:5500
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:25:05] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:25:06] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:25:23] "GET /hola1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:25:48] "GET /hola1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:25:52] "GET /hola1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:26:49] "GET /hola3 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:26:49] "GET /hola3 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:26:53] "GET /hola2 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:26:53] "GET /hola2 HTTP/1.1" 200 -
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:27:42] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:27:43] "GET /hola1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:27:55] "GET /hola2 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:34:22] "GET /hola1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:39:27] "GET /hola2 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [28/Jan/2024 23:54:48] "[33mGET /_/mss/boq-one-google/_/ss/k=boq-one-google.OneGoogleWidgetUi.4ECMSSDRdOI.L.B1.O/am=AgbJDw/d=1/ed=1/rs=AM-SdHtzHvdmB1LfrRxPEIdQow_tnTHRTQ/chrome.css.map HTTP/1.1[0m" 404 -
