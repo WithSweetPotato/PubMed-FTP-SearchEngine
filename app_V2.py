@@ -151,37 +151,4 @@ def search_papers():
 if __name__ == '__main__':
     app.run(debug=True)
 
-# @app.route('/search_papers', methods=['GET', 'POST'])
-# def search_papers():
-#     search_results = []
-#     if request.method == 'POST':
-#         search_query = request.form['search_query']  # HTML 폼에서 사용자가 입력한 검색어 받기
-
-#         conn = get_db_connection()
-#         cursor = conn.cursor(dictionary=True)
-
-#         # 'search_log' 테이블이 없는 경우 생성
-#         cursor.execute('''
-#             CREATE TABLE IF NOT EXISTS search_log (
-#                 id INT AUTO_INCREMENT PRIMARY KEY,
-#                 search_query VARCHAR(255),
-#                 search_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-#             )
-#         ''')
-
-#         # 검색 쿼리를 사용하여 'parsed_data' 테이블에서 논문 정보 조회
-#         search_sql = "SELECT * FROM parsed_data WHERE ArticleTitle LIKE %s OR JournalTitle LIKE %s"
-#         cursor.execute(search_sql, ('%' + search_query + '%', '%' + search_query + '%'))
-#         search_results = cursor.fetchall()
-
-#         # 검색 기록을 'search_log' 테이블에 저장
-#         insert_log_sql = "INSERT INTO search_log (search_query) VALUES (%s)"
-#         cursor.execute(insert_log_sql, (search_query,))
-#         conn.commit()
-
-#         cursor.close()
-#         conn.close()
-
-#     return render_template('search_papers.html', search_results=search_results)
-
 

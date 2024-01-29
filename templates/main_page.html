@@ -2,8 +2,49 @@
 <html>
 <head>
     <title>Main Page</title>
+    <style>
+        body {
+            margin-left: 20px;
+        }
+        img.logo {
+            width: 260px; /* 로고 이미지의 크기를 조절 */
+            margin-top: 10px;
+        }
+        .logo-container {
+            display: flex; /* 이미지들을 가로로 나란히 배치 */
+            align-items: center; /* 이미지들을 세로 중앙에 정렬 */
+        }
+        .pubmed-logo {
+            background-color: navy; /* 배경색을 네이비색으로 설정 */
+            padding: 10px; /* 배경과 이미지 사이의 여백 설정 */
+            margin-left: 40px; /* 첫 번째 이미지와 두 번째 이미지 사이의 간격 */
+        }
+        .pubmed-logo img {
+            width: 150px; /* PubMed 로고 이미지의 크기 설정 */
+            display: block; /* 이미지를 블록 요소로 만들어 주변 여백을 허용 */
+        }
+        ul {
+            font-size: 135%;
+        }
+        li {
+            padding: 10px 0; /* 상하 여백을 추가하여 각 항목의 크기 증가 */
+        }
+    </style>
 </head>
 <body>
+    <div class="logo-container">
+        <!-- 첫 번째 로고 이미지 -->
+        <a href="https://www.theragenbio.com">
+            <img src="https://www.theragenbio.com/img/logo_b.png" alt="TheragenBio Logo" class="logo">
+        </a>
+        <!-- 두 번째 로고 이미지 -->
+        <div class="pubmed-logo">
+            <a href="https://pubmed.ncbi.nlm.nih.gov/">
+                <img src="https://cdn.ncbi.nlm.nih.gov/pubmed/3e4cfc65-2ab1-4120-b309-62dc21bfd9c1/core/images/pubmed-logo-white.svg" alt="PubMed Logo">
+            </a>
+        </div>
+    </div>
+
     <h1>Welcome to TheragenBio PubMed Paper Search System</h1>
     <h2>Developed by HYUN-JUN NAM, TheragenBio Platform Dev-dept candidate</h2>
 
