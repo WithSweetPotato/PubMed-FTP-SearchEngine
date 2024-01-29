@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>논문 상세 정보</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>논문 상세 정보</h1>
+    
+    <table>
+        <tr>
+            <th>필드</th>
+            <th>내용</th>
+        </tr>
+        <tr>
+            <td>논문 제목</td>
+            <td>{{ paper['ArticleTitle'] | safe }}</td>
+        </tr>
+        <tr>
+            <td>언어</td>
+            <td>{{ paper['Language'] }}</td>
+        </tr>
+        <tr>
+            <td>저널 제목</td>
+            <td>{{ paper['JournalTitle'] }}</td>
+        </tr>
+        <tr>
+            <td>ISSN</td>
+            <td>{{ paper['ISSN'] }}</td>
+        </tr>
+        <tr>
+            <td>게재일</td>
+            <td>{{ paper['PubDate'] }}</td>
+        </tr>
+        <tr>
+            <td>수정일</td>
+            <td>{{ paper['DateRevised'] }}</td>
+        </tr>
+        <tr>
+            <td>저자</td>
+            <td>{{ paper['Authors'] }}</td>
+        </tr>
+    </table>
+    
+    <a href="https://pubmed.ncbi.nlm.nih.gov/{{ paper['PMID'] }}/" target="_blank">PubMed 논문 상세 페이지로 이동</a>
+    <br>
+    <a href="{{ url_for('index') }}" style="display:inline-block; margin-top:20px; padding:10px; background-color:#007bff; color:white; text-decoration:none; border-radius:5px;">메인 페이지로 돌아가기</a>
+</body>
+</html>

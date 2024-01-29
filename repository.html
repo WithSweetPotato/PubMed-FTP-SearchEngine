@@ -1,0 +1,25 @@
+<table>
+    <tr>
+        <th>PMID</th>
+        <th>논문 제목</th>
+        <th>언어</th>
+        <th>저널명</th>
+        <th>ISSN</th>
+        <th>게재일</th>
+        <th>수정일</th>
+        <th>저자</th>
+    </tr>
+    {% for paper in search_results %}
+    <tr>
+        <td><a href="/paper_details/{{ paper['PMID'] }}">{{ paper['PMID'] }}</a></td>
+        <td>{{ paper['ArticleTitle'].replace(search_query, '<strong>' + search_query + '</strong>') | safe }}</td>
+        <td>{{ paper['Language'] }}</td>
+        <td>{{ paper['JournalTitle'] }}</td>
+        <td>{{ paper['ISSN'] }}</td>
+        <td>{{ paper['PubDate'] }}</td>
+        <td>{{ paper['DateRevised'] }}</td>
+        <td>{{ paper['Authors'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>

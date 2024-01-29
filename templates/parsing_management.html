@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>파싱 관리</title>
+</head>
+<body>
+    <!-- "파싱 시작" 버튼을 최상단에 배치 -->
+
+    <a href="{{ url_for('index') }}" style="display:inline-block; margin-top:20px; padding:10px; background-color:#007bff; color:white; text-decoration:none; border-radius:5px;">메인 페이지로 돌아가기</a>
+
+    <h1>파싱 관리</h1>
+
+    <form action="/start_parsing" method="post">
+        <button type="submit">파싱 시작</button>
+    </form>
+
+    <h2>파싱 결과</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>시작 시간</th>
+            <th>종료 시간</th>
+            <th>소요 시간</th>
+            <th>성공 개수</th>
+            <th>실패 개수</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result['id'] }}</td>
+            <td>{{ result['start_time'] }}</td>
+            <td>{{ result['end_time'] }}</td>
+            <td>{{ result['duration'] }}</td>
+            <td>{{ result['success_count'] }}</td>
+            <td>{{ result['fail_count'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>파일별 파싱 상태</h2>
+    <table>
+        <tr>
+            <th>파일 이름</th>
+            <th>상태</th>
+        </tr>
+        {% for filename in filenames %}
+        <tr>
+            <td>{{ filename['filename'] }}</td>
+            <td>{{ filename['status'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+<!-- parsing_management.html 내에 추가 -->
+{% if message %}
+    <p>{{ message }}</p>
+{% endif %}
+
+{% if console_output %}
+    <h2>콘솔 출력:</h2>
+    <pre>{{ console_output }}</pre>
+{% endif %}
+
+</body>
+</html>

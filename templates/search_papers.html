@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>논문 검색</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {background-color: #f2f2f2;}
+        tr:hover {background-color: #ddd;}
+        a {
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('index') }}" style="display:inline-block; margin-top:20px; padding:10px; background-color:#007bff; color:white; text-decoration:none; border-radius:5px;">메인 페이지로 돌아가기</a>
+
+    <h1>논문 검색</h1>
+
+    <form action="/search_papers" method="post">
+        <input type="text" name="search_query" placeholder="논문 제목, 저널명 검색">
+        <button type="submit">검색</button>
+    </form>
+
+    <h2>검색 결과</h2>
+    <table>
+        <tr>
+            <th>PMID</th>
+            <th>논문 제목</th>
+            <th>언어</th>
+            <th>저널명</th>
+            <th>ISSN</th>
+            <th>게재일</th>
+            <th>수정일</th>
+            <th>저자</th>
+        </tr>
+        {% for paper in search_results %}
+        <tr>
+            <td><a href="/paper_details/{{ paper['PMID'] }}">{{ paper['PMID'] }}</a></td>
+            <td>{{ paper['ArticleTitle'].replace(search_query, '<strong>' + search_query + '</strong>') | safe }}</td>
+            <td>{{ paper['Language'] }}</td>
+            <td>{{ paper['JournalTitle'] }}</td>
+            <td>{{ paper['ISSN'] }}</td>
+            <td>{{ paper['PubDate'] }}</td>
+            <td>{{ paper['DateRevised'] }}</td>
+            <td>{{ paper['Authors'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

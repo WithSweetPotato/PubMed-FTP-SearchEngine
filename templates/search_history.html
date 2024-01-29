@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>논문 검색 히스토리</title>
+</head>
+<body>
+    <h1>논문 검색 히스토리</h1>
+    <ul>
+        {% for log in logs %}
+        <li>{{ log.search_time }}: {{ log.search_query }} 
+            <a href="{{ url_for('delete_log', log_id=log.id) }}">삭제</a>
+        </li>
+        {% endfor %}
+    </ul>
+<a href="{{ url_for('index') }}" style="display:inline-block; margin-top:20px; padding:10px; background-color:#007bff; color:white; text-decoration:none; border-radius:5px;">메인 페이지로 돌아가기</a>
+</body>
+</html>
