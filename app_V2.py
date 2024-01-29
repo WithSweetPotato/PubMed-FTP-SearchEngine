@@ -21,7 +21,6 @@ def search_history():
     # 'search_logs' 테이블에서 모든 검색 기록 가져오기
     cursor.execute('SELECT * FROM search_logs ORDER BY search_time DESC')
     logs = cursor.fetchall()
-    
     cursor.close()
     conn.close()
     
