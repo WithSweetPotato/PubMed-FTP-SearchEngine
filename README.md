@@ -21,7 +21,7 @@ contact : richy1004@kangwon.ac.kr
 
 /root
 .gitignore : not uploading Big files(XML, XML.GZ, JSON..)  
-REAFME : Readme file  
+README : Readme file  
 app_V2.py : FLASK  
 down_updatefiles_V3 : Download FTP, Checksum Hash  
 make_test_file.py : make example file for checksum Hash  
