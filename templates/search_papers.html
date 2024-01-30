@@ -27,6 +27,16 @@
         .hidden {
             display: none;
         }
+        /* Syntax Highlighting 스타일 */
+        .json-key {
+            color: brown;
+        }
+        .json-value {
+            color: navy;
+        }
+        .json-string {
+            color: green;
+        }
     </style>
     <script>
         function toggleView() {
@@ -44,14 +54,43 @@
                 toggleBtn.textContent = "View as Table";
             }
         }
+
+        // Syntax Highlighting 적용 함수
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+                var cls = 'json-value';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // 페이지 로드 시 JSON 데이터에 Syntax Highlighting 적용
+        window.onload = function() {
+            var jsonElements = document.querySelectorAll('pre');
+            jsonElements.forEach(function(element) {
+                element.innerHTML = syntaxHighlight(element.innerText);
+            });
+        }
     </script>
 </head>
 <body>
     <a href="{{ url_for('index') }}" style="display:inline-block; margin-top:10px; padding:5px; background-color:#007bff; color:white; text-decoration:none; border-radius:5px; font-size: 0.8em;">메인 페이지로 돌아가기</a>
 
     <h1>논문 검색</h1>
-
-
 
     <form action="/search_papers" method="post">
         <input type="text" name="search_query" placeholder="논문 제목, 저널명 검색">
@@ -64,7 +103,6 @@
         <h2>검색 결과</h2>
         <h2>{{ search_results | length }} 개의 논문이 검색되었습니다.</h2>
         <table>
-            <!-- 테이블 뷰 내용 -->
             <tr>
                 <th>PMID</th>
                 <th>논문 제목</th>

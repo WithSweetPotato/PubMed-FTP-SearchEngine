@@ -2,10 +2,46 @@
 <html>
 <head>
     <title>파싱 관리</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {background-color: #f2f2f2;}
+        tr:hover {background-color: #ddd;}
+        a {
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
+        }
+        button {
+            margin-top: 10px;
+            padding: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <!-- "파싱 시작" 버튼을 최상단에 배치 -->
-
     <a href="{{ url_for('index') }}" style="display:inline-block; margin-top:10px; padding:5px; background-color:#007bff; color:white; text-decoration:none; border-radius:5px; font-size: 0.8em;">메인 페이지로 돌아가기</a>
 
     <h1>파싱 관리</h1>
@@ -50,15 +86,13 @@
         {% endfor %}
     </table>
 
-<!-- parsing_management.html 내에 추가 -->
-{% if message %}
-    <p>{{ message }}</p>
-{% endif %}
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
 
-{% if console_output %}
-    <h2>콘솔 출력:</h2>
-    <pre>{{ console_output }}</pre>
-{% endif %}
-
+    {% if console_output %}
+        <h2>콘솔 출력:</h2>
+        <pre>{{ console_output }}</pre>
+    {% endif %}
 </body>
 </html>
